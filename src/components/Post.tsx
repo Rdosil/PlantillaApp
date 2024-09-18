@@ -97,12 +97,12 @@ export default function Post({ post, onUpdate }: PostProps) {
         </div>
       )}
       {post.imageUrl && (
-        <div className="relative w-full h-64 mb-2">
+        <div className="relative w-full h-0 pb-[56.25%] mb-2">
           <Image 
             src={post.imageUrl} 
             alt="Post image" 
             layout="fill" 
-            objectFit="cover"
+            objectFit="contain"
             className="rounded-lg"
           />
         </div>

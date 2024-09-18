@@ -64,7 +64,15 @@ export default function Profile() {
       <h2 className="text-2xl font-bold mb-4">Perfil</h2>
       <div className="mb-4">
         {profileImage ? (
-          <Image src={profileImage} alt="Imagen de perfil" width={100} height={100} className="rounded-full" />
+          <div className="relative w-24 h-24">
+            <Image 
+              src={profileImage} 
+              alt="Imagen de perfil" 
+              layout="fill" 
+              objectFit="cover" 
+              className="rounded-full"
+            />
+          </div>
         ) : (
           <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
             <span className="text-3xl">{user.displayName?.[0].toUpperCase()}</span>
