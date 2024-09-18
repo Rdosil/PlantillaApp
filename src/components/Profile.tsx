@@ -6,6 +6,7 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { getDocuments, updateDocument, uploadFile } from "../lib/firebase/firebaseUtils";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase/firebase";
+import { PencilIcon, CheckIcon, XIcon } from 'lucide-react'; // Asegúrate de instalar lucide-react
 
 interface Post {
   id: string;
@@ -15,6 +16,8 @@ interface Post {
 export default function Profile() {
   const { user } = useAuth();
   const [bio, setBio] = useState("");
+  const [editedBio, setEditedBio] = useState("");
+  const [isEditingBio, setIsEditingBio] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -26,6 +29,7 @@ export default function Profile() {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setBio(userData.bio || "");
+          setEditedBio(userData.bio || "");
           setProfileImage(userData.profileImage || null);
         }
       }
@@ -41,9 +45,15 @@ export default function Profile() {
 
   const handleUpdateBio = async () => {
     if (user) {
-      await updateDocument("users", user.uid, { bio });
-      alert("Biografía actualizada con éxito");
+      await updateDocument("users", user.uid, { bio: editedBio });
+      setBio(editedBio);
+      setIsEditingBio(false);
     }
+  };
+
+  const handleCancelEditBio = () => {
+    setEditedBio(bio);
+    setIsEditingBio(false);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,16 +92,35 @@ export default function Profile() {
       </div>
       <p className="mb-2">Nombre: {user?.displayName}</p>
       <p className="mb-2">Email: {user?.email}</p>
-      <div className="mb-4">
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          className="border rounded p-2 w-full"
-          placeholder="Escribe tu biografía"
-        />
-        <button onClick={handleUpdateBio} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
-          Actualizar biografía
-        </button>
+      <div className="mb-4 relative">
+        {isEditingBio ? (
+          <>
+            <textarea
+              value={editedBio}
+              onChange={(e) => setEditedBio(e.target.value)}
+              className="border rounded p-2 w-full"
+              placeholder="Escribe tu biografía"
+            />
+            <div className="absolute right-2 top-2">
+              <button onClick={handleUpdateBio} className="text-green-500 mr-2">
+                <CheckIcon size={20} />
+              </button>
+              <button onClick={handleCancelEditBio} className="text-red-500">
+                <XIcon size={20} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="relative">
+            <p className="p-2">{bio || "No hay biografía"}</p>
+            <button 
+              onClick={() => setIsEditingBio(true)} 
+              className="absolute right-2 top-2 text-blue-500"
+            >
+              <PencilIcon size={20} />
+            </button>
+          </div>
+        )}
       </div>
       <h3 className="text-xl font-bold mb-2">Mis publicaciones</h3>
       {posts.map((post) => (
