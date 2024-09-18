@@ -9,6 +9,7 @@ import CreatePost from "../components/CreatePost";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("home");
+  const [isCreatingPost, setIsCreatingPost] = useState(false);
   const { user } = useAuth();
 
   if (!user) {
@@ -23,8 +24,8 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
       <nav className="w-full max-w-2xl mb-8">
-        <ul className="flex justify-around">
-          {["home", "profile", "create"].map((tab) => (
+        <ul className="flex justify-around items-center">
+          {["home", "profile"].map((tab) => (
             <li key={tab}>
               <button
                 onClick={() => setActiveTab(tab)}
@@ -36,12 +37,24 @@ export default function Home() {
               </button>
             </li>
           ))}
+          <li>
+            <button
+              onClick={() => setIsCreatingPost(!isCreatingPost)}
+              className="bg-green-500 text-white px-4 py-2 rounded-md"
+            >
+              {isCreatingPost ? "Cerrar" : "Crear Post"}
+            </button>
+          </li>
         </ul>
       </nav>
       <div className="w-full max-w-2xl">
+        {isCreatingPost && (
+          <div className="mb-8">
+            <CreatePost onPostCreated={() => setIsCreatingPost(false)} />
+          </div>
+        )}
         {activeTab === "home" && <Feed />}
         {activeTab === "profile" && <Profile />}
-        {activeTab === "create" && <CreatePost />}
       </div>
     </main>
   );

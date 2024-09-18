@@ -5,7 +5,11 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { addDocument, uploadFile } from "../lib/firebase/firebaseUtils";
 import ImageUpload from "./ImageUpload";
 
-export default function CreatePost() {
+interface CreatePostProps {
+  onPostCreated: () => void;
+}
+
+export default function CreatePost({ onPostCreated }: CreatePostProps) {
   const { user } = useAuth();
   const [text, setText] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -28,11 +32,12 @@ export default function CreatePost() {
     });
     setText("");
     setImage(null);
+    onPostCreated();
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Crear publicación</h2>
+    <div className="border rounded-lg p-4 mb-4">
+      <h2 className="text-xl font-bold mb-4">Crear publicación</h2>
       <form onSubmit={handleSubmit}>
         <textarea
           value={text}

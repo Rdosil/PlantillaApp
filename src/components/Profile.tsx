@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { useAuth } from "../lib/hooks/useAuth";
-import { getDocuments, updateDocument } from "../lib/firebase/firebaseUtils";
+import { getDocuments, updateDocument, uploadFile } from "../lib/firebase/firebaseUtils";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase/firebase";
 
@@ -15,6 +16,7 @@ export default function Profile() {
   const { user } = useAuth();
   const [bio, setBio] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -22,7 +24,9 @@ export default function Profile() {
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          setBio(userDoc.data().bio || "");
+          const userData = userDoc.data();
+          setBio(userData.bio || "");
+          setProfileImage(userData.profileImage || null);
         }
       }
     };
@@ -42,6 +46,15 @@ export default function Profile() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user) {
+      const imageUrl = await uploadFile(file, `profileImages/${user.uid}`);
+      setProfileImage(imageUrl);
+      await updateDocument("users", user.uid, { profileImage: imageUrl });
+    }
+  };
+
   if (!user) {
     return <div>Cargando...</div>;
   }
@@ -49,6 +62,16 @@ export default function Profile() {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Perfil</h2>
+      <div className="mb-4">
+        {profileImage ? (
+          <Image src={profileImage} alt="Imagen de perfil" width={100} height={100} className="rounded-full" />
+        ) : (
+          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+            <span className="text-3xl">{user.displayName?.[0].toUpperCase()}</span>
+          </div>
+        )}
+        <input type="file" accept="image/*" onChange={handleImageUpload} className="mt-2" />
+      </div>
       <p className="mb-2">Nombre: {user?.displayName}</p>
       <p className="mb-2">Email: {user?.email}</p>
       <div className="mb-4">
