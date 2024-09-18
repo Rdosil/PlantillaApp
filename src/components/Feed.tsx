@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getDocuments } from "../lib/firebase/firebaseUtils";
+import { getDocuments, updateDocument } from "../lib/firebase/firebaseUtils";
 import Post from "./Post";
 
 interface PostType {
@@ -20,11 +20,19 @@ export default function Feed() {
     fetchPosts();
   }, []);
 
+  const handleUpdatePost = (id: string, newText: string) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === id ? { ...post, text: newText } : post
+      )
+    );
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Feed</h2>
       {posts.map((post) => (
-        <Post key={post.id} post={post} />
+        <Post key={post.id} post={post} onUpdate={handleUpdatePost} />
       ))}
     </div>
   );

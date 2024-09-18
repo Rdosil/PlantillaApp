@@ -23,6 +23,7 @@ export default function CreatePost() {
       authorId: user?.uid,
       createdAt: new Date().toISOString(),
       likes: 0,
+      reactions: [], // Inicializa las reacciones como un array vacío
       comments: [],
     });
     setText("");
