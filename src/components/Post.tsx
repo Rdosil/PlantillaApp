@@ -39,7 +39,15 @@ export default function Post({ post }: PostProps) {
       <p className="font-bold mb-2">{post.author}</p>
       <p className="mb-2">{post.text}</p>
       {post.imageUrl && (
-        <Image src={post.imageUrl} alt="Post image" width={300} height={200} className="mb-2" />
+        <div className="relative w-full h-64 mb-2">
+          <Image 
+            src={post.imageUrl} 
+            alt="Post image" 
+            layout="fill" 
+            objectFit="cover"
+            className="rounded-lg"
+          />
+        </div>
       )}
       <button onClick={handleLike} className="bg-blue-500 text-white px-2 py-1 rounded mr-2">
         Like ({likes})
