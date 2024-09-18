@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "../lib/hooks/useAuth";
 import { updateDocument } from "../lib/firebase/firebaseUtils";
 
-export default function Post({ post }) {
+interface PostProps {
+  post: {
+    id: string;
+    author: string;
+    text: string;
+    imageUrl?: string;
+    likes: number;
+    comments?: { user: string; text: string }[];
+  };
+}
+
+export default function Post({ post }: PostProps) {
   const { user } = useAuth();
   const [likes, setLikes] = useState(post.likes || 0);
   const [comment, setComment] = useState("");
@@ -16,9 +27,9 @@ export default function Post({ post }) {
     await updateDocument("posts", post.id, { likes: newLikes });
   };
 
-  const handleComment = async (e) => {
+  const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newComments = [...(post.comments || []), { user: user.displayName, text: comment }];
+    const newComments = [...(post.comments || []), { user: user?.displayName || "", text: comment }];
     await updateDocument("posts", post.id, { comments: newComments });
     setComment("");
   };

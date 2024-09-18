@@ -1,25 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../lib/hooks/useAuth";
 import { getDocuments, updateDocument } from "../lib/firebase/firebaseUtils";
+
+interface Post {
+  id: string;
+  text: string;
+}
 
 export default function Profile() {
   const { user } = useAuth();
   const [bio, setBio] = useState("");
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
       const userData = await getDocuments("users");
-      const currentUser = userData.find((u) => u.id === user.uid);
+      const currentUser = userData.find((u: any) => u.id === user?.uid);
       if (currentUser) {
         setBio(currentUser.bio || "");
       }
     };
     const fetchUserPosts = async () => {
       const allPosts = await getDocuments("posts");
-      const userPosts = allPosts.filter((post) => post.authorId === user.uid);
+      const userPosts = allPosts.filter((post: any) => post.authorId === user?.uid);
       setPosts(userPosts);
     };
     fetchUserData();
@@ -27,14 +32,16 @@ export default function Profile() {
   }, [user]);
 
   const handleUpdateBio = async () => {
-    await updateDocument("users", user.uid, { bio });
+    if (user) {
+      await updateDocument("users", user.uid, { bio });
+    }
   };
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Perfil</h2>
-      <p className="mb-2">Nombre: {user.displayName}</p>
-      <p className="mb-2">Email: {user.email}</p>
+      <p className="mb-2">Nombre: {user?.displayName}</p>
+      <p className="mb-2">Email: {user?.email}</p>
       <div className="mb-4">
         <textarea
           value={bio}

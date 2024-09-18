@@ -1,16 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { getDocuments } from "../lib/firebase/firebaseUtils";
 import Post from "./Post";
 
+interface PostType {
+  id: string;
+  [key: string]: any;
+}
+
 export default function Feed() {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostType[]>([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
       const fetchedPosts = await getDocuments("posts");
-      setPosts(fetchedPosts);
+      setPosts(fetchedPosts as PostType[]);
     };
     fetchPosts();
   }, []);

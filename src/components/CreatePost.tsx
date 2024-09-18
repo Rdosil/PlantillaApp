@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../lib/hooks/useAuth";
 import { addDocument, uploadFile } from "../lib/firebase/firebaseUtils";
 import ImageUpload from "./ImageUpload";
@@ -8,19 +8,19 @@ import ImageUpload from "./ImageUpload";
 export default function CreatePost() {
   const { user } = useAuth();
   const [text, setText] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState<File | null>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let imageUrl = "";
-    if (image) {
+    if (image && user) {
       imageUrl = await uploadFile(image, `posts/${user.uid}/${Date.now()}`);
     }
     await addDocument("posts", {
       text,
       imageUrl,
-      author: user.displayName,
-      authorId: user.uid,
+      author: user?.displayName,
+      authorId: user?.uid,
       createdAt: new Date().toISOString(),
       likes: 0,
       comments: [],

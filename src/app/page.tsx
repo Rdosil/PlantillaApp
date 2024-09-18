@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../lib/hooks/useAuth";
 import SignInWithGoogle from "../components/SignInWithGoogle";
 import Feed from "../components/Feed";
@@ -8,7 +8,7 @@ import Profile from "../components/Profile";
 import CreatePost from "../components/CreatePost";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState<string>("home");
   const { user } = useAuth();
 
   if (!user) {
