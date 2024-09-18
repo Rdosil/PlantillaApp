@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../lib/hooks/useAuth";
 import { getDocuments, updateDocument } from "../lib/firebase/firebaseUtils";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase/firebase";
 
 interface Post {
   id: string;
@@ -16,10 +18,12 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const userData = await getDocuments("users");
-      const currentUser = userData.find((u: any) => u.id === user?.uid);
-      if (currentUser) {
-        setBio(currentUser.bio || "");
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setBio(userDoc.data().bio || "");
+        }
       }
     };
     const fetchUserPosts = async () => {
@@ -34,8 +38,13 @@ export default function Profile() {
   const handleUpdateBio = async () => {
     if (user) {
       await updateDocument("users", user.uid, { bio });
+      alert("Biografía actualizada con éxito");
     }
   };
+
+  if (!user) {
+    return <div>Cargando...</div>;
+  }
 
   return (
     <div>

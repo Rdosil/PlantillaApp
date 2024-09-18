@@ -3,6 +3,8 @@
 import React, { createContext, useEffect, useState } from "react";
 import { signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, User } from "firebase/auth";
 import { auth } from "../firebase/firebase";
+import { getDoc, doc, setDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -18,8 +20,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
+      if (user) {
+        // Verificar si el documento del usuario existe, si no, crearlo
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            displayName: user.displayName,
+            email: user.email,
+            bio: "",
+          });
+        }
+      }
       setLoading(false);
     });
 
