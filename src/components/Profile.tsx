@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "../lib/hooks/useAuth";
 import { getDocuments, updateDocument, uploadFile } from "../lib/firebase/firebaseUtils";
@@ -13,6 +13,11 @@ interface Post {
   text: string;
 }
 
+interface ProfileImagePosition {
+  x: number;
+  y: number;
+}
+
 export default function Profile() {
   const { user } = useAuth();
   const [bio, setBio] = useState("");
@@ -20,6 +25,9 @@ export default function Profile() {
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imagePosition, setImagePosition] = useState<ProfileImagePosition>({ x: 50, y: 50 });
+  const [isDragging, setIsDragging] = useState(false);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,6 +39,7 @@ export default function Profile() {
           setBio(userData.bio || "");
           setEditedBio(userData.bio || "");
           setProfileImage(userData.profileImage || null);
+          setImagePosition(userData.imagePosition || { x: 50, y: 50 });
         }
       }
     };
@@ -61,7 +70,28 @@ export default function Profile() {
     if (file && user) {
       const imageUrl = await uploadFile(file, `profileImages/${user.uid}`);
       setProfileImage(imageUrl);
-      await updateDocument("users", user.uid, { profileImage: imageUrl });
+      setImagePosition({ x: 50, y: 50 }); // Reset position when new image is uploaded
+      await updateDocument("users", user.uid, { profileImage: imageUrl, imagePosition: { x: 50, y: 50 } });
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && imageRef.current) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setImagePosition({ x, y });
+    }
+  };
+
+  const handleMouseUp = async () => {
+    setIsDragging(false);
+    if (user) {
+      await updateDocument("users", user.uid, { imagePosition });
     }
   };
 
@@ -74,13 +104,23 @@ export default function Profile() {
       <h2 className="text-2xl font-bold mb-4">Perfil</h2>
       <div className="mb-4">
         {profileImage ? (
-          <div className="relative w-24 h-24">
-            <Image 
-              src={profileImage} 
-              alt="Imagen de perfil" 
-              layout="fill" 
-              objectFit="cover" 
-              className="rounded-full"
+          <div 
+            ref={imageRef}
+            className="relative w-24 h-24 rounded-full overflow-hidden cursor-move"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <div 
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${profileImage})`,
+                backgroundPosition: `${imagePosition.x}% ${imagePosition.y}%`,
+                backgroundSize: 'cover',
+              }}
             />
           </div>
         ) : (
